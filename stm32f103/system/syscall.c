@@ -14,19 +14,18 @@
 
 int _write(int file, char *ptr, int len)
 {
-	int ret;
+	int		ret, i;
 
 	if (file == 1) {
-		ret = ring_write(&output_ring, (uint8_t *)ptr, len);
-
-		if (ret < 0)
-			ret = -ret;
+		for(i = 0; i < len; i++) {
+			if((ret = putserial(file, (unsigned char)ptr[i])) == 0) {
+				continue;
+			}
+			break;
+		}
 
 		USART_CR1(USART1) |= USART_CR1_TXEIE;
 
-		return ret;
+		return i;
 	}
-
-	errno = EIO;
-	return -1;
 }
