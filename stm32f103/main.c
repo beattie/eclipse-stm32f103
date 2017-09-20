@@ -24,6 +24,7 @@
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/usb/usbd.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 
@@ -31,6 +32,8 @@
 #include "maplemini.h"
 #include "cdcacm.h"
 
+FILE *acm;
+char	acmbuffer[64];
 /******************************************************************************
  * The example implementation
  *****************************************************************************/
@@ -92,15 +95,23 @@ void sys_tick_handler(void)
 
 int main(void)
 {
+	int		len;
+
 	clock_setup();
 	gpio_setup();
 	usart_setup();
 	systick_setup();
 	cdcacm_setup();
+
+	acm = fopen("acm0", "w");
+
 	printf("Hello World!\r\n");
 
 	while (1) {
 		usbd_poll(usbd_dev);
+		if((len = read(1, acmbuffer, 64)) > 0) {
+			write(3, acmbuffer, len);
+		}
 		__asm__("nop");
 	}
 

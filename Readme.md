@@ -7,7 +7,9 @@ Some projects contain examples copied from libopencm3-examples.
 This branch builds on usart_irq_printf. It demos the USB cdc_acm(USB serial
 adapter). It connects the cdc_acm to tty1 to make a serial adapter.
 
-It also demos implementations of \_read and \_write.
+It also demos implementations of \_read and \_write and _open.
+
+This branch provides a basic demo of cdcacm and syscall IO.
 
 ### newlib
 https://sourceware.org/newlib/

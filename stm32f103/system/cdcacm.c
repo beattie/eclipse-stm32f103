@@ -22,6 +22,9 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>
+#include <unistd.h>
+
+#include "syscall.h"
 
 usbd_device *usbd_dev;
 
@@ -160,9 +163,9 @@ static const struct usb_config_descriptor config = {
 };
 
 static const char *usb_strings[] = {
-	"Libopencm3 Examples",
-	"CDC-ACM Demo",
-	"DEMO",
+	"Libopencm3 Examples",	/* iManufacturer */
+	"CDC-ACM Demo",			/* iProduct */
+	"DEMO",					/* iSerial */
 };
 
 /* Buffer to be used for control requests. */
@@ -204,6 +207,21 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 	return 0;
 }
 
+static int writeacm(int file, char *ptr, int len)
+{
+	int		n;
+
+	while(len > 0) {
+		if(len > 64) {
+			n = 64;
+		} else {
+			n = len;
+		}
+		usbd_ep_write_packet(usbd_dev, 0x82, ptr, len);
+		len -= n;
+	}
+}
+
 static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 {
 	(void)ep;
@@ -212,11 +230,8 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	char buf[64];
 	int len = usbd_ep_read_packet(usbd_dev, 0x01, buf, 64);
 
-	if (len) {
-		printf("%d %x\n", len, buf[0]);
-		usbd_ep_write_packet(usbd_dev, 0x82, buf, len);
-		buf[len] = 0;
-	}
+	write(1, buf, len);
+	write(1,"\n", 1);
 }
 
 static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
@@ -254,4 +269,6 @@ void cdcacm_setup(void)
 	usbd_dev = usbd_init(&st_usbfs_v1_usb_driver, &dev, &config, usb_strings,
 			3, usbd_control_buffer, sizeof(usbd_control_buffer));
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
+
+	stdio_register(3, NULL, writeacm);
 }

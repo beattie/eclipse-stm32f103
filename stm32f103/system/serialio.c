@@ -57,7 +57,7 @@ static int getq(struct serialq *q)
 	return c;
 }
 
-int	writeserial(int file, char *ptr, int len)
+static int	writeserial(int file, char *ptr, int len)
 {
 
 	int		ret, i;
@@ -80,9 +80,18 @@ int	writeserial(int file, char *ptr, int len)
 	return -1;
 }
 
-int readserial(int file, char *ptr, int len)
+static int readserial(int file, char *ptr, int len)
 {
-	return -1;
+	int		b, c = 0;
+
+	while(c < len) {
+		if((b = getq(&serial[0].in)) >= 0) {
+			ptr[c++] = b;
+		} else {
+			return c;
+		}
+	}
+	return c;
 }
 
 void usart_setup(void)
