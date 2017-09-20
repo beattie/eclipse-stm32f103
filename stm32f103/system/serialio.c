@@ -57,20 +57,32 @@ static int getq(struct serialq *q)
 	return c;
 }
 
-int	putserial(int file, unsigned char c)
+int	writeserial(int file, char *ptr, int len)
 {
-	if(file != 1) {
-		return -1;
+
+	int		ret, i;
+
+	if (file == 1) {
+		for(i = 0; i < len; i++) {
+			if(ptr[i] == '\n') {
+				putq(&serial[0].out, '\r');
+			}
+			if((ret = putq(&serial[0].out, (unsigned char)ptr[i])) == 0) {
+				continue;
+			}
+			break;
+		}
+
+		USART_CR1(USART1) |= USART_CR1_TXEIE;
+
+		return i;
 	}
-	return putq(&serial[0].out, c);
+	return -1;
 }
 
-int getserial(int file)
+int readserial(int file, char *ptr, int len)
 {
-	if(file != 1) {
-		return -1;
-	}
-	return getq(&serial[0].in);
+	return -1;
 }
 
 void usart_setup(void)
@@ -99,6 +111,8 @@ void usart_setup(void)
 
 	/* Finally enable the USART. */
 	usart_enable(USART1);
+	stdio_register(0, readserial, writeserial);
+	stdio_register(1, readserial, writeserial);
 }
 
 void usart1_isr(void)

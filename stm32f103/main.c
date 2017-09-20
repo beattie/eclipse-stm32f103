@@ -23,11 +23,13 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/systick.h>
+#include <libopencm3/usb/usbd.h>
 #include <stdio.h>
 #include <errno.h>
 
 #include "serialio.h"
 #include "maplemini.h"
+#include "cdcacm.h"
 
 /******************************************************************************
  * The example implementation
@@ -94,10 +96,13 @@ int main(void)
 	gpio_setup();
 	usart_setup();
 	systick_setup();
+	cdcacm_setup();
 	printf("Hello World!\r\n");
 
-	while (1)
+	while (1) {
+		usbd_poll(usbd_dev);
 		__asm__("nop");
+	}
 
 	return 0;
 }

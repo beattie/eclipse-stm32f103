@@ -3,10 +3,11 @@ This repository contains in it's branches Eclipse projects using libopencm3
 targeted for a maple mini clone from BAITE, an STM32F103CB development board.
 Some projects contain examples copied from libopencm3-examples.
 
-### usart_irq_printf
-This branch demos serial io using USART1 and interrupts using ring buffers.
-Is also demos printf with an implementation of _write that copyies it's input
-to a the ring buffer configured for output on USART1.
+### cdcacm
+This branch builds on usart_irq_printf. It demos the USB cdc_acm(USB serial
+adapter). It connects the cdc_acm to tty1 to make a serial adapter.
+
+It also demos implementations of \_read and \_write.
 
 ### newlib
 https://sourceware.org/newlib/
